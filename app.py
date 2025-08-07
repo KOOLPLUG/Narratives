@@ -77,11 +77,13 @@ Original file is located at
 #         about_page()
 # 
 # def home_page():
-#     st.header("uncover the patterns shaping your world")
-#     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
-#     st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
-#     st.write("Use the navigation on the left to explore different features of the app.")
-#     # Add any other content for the home page here
+#     st.header("Welcome to NarrAItives!")
+#     st.write("Explore news articles and uncover patterns in rhetoric.")
+#     st.write("Use the navigation on the left to get started.")
+#     st.subheader("How it works:")
+#     st.write("- **Article Text Viewer:** Fetch and analyze the text of a news article.")
+#     st.write("- **Popular Rhetoric Timeline:** (Coming Soon) Visualize trends in rhetoric over time.")
+#     st.write("Select a page from the sidebar to continue.")
 # 
 # def article_text_viewer_page():
 #     st.header("view article text and classify rhetoric")
@@ -128,7 +130,8 @@ Original file is located at
 # def about_page():
 #     st.header("The media tells stories. We tell you why.")
 #     st.write("Learn more about the NarrAItives project and the team behind it.")
-#     # Add information about the project here
+#     st.write("NarrAItives is a project aimed at analyzing patterns in news media rhetoric.")
+#     st.write("Stay tuned for more features!")
 # 
 # if __name__ == "__main__":
 #     main()
