@@ -133,18 +133,6 @@ Original file is located at
 # if __name__ == "__main__":
 #     main()
 
-"""# Task
-Integrate the provided Hugging Face Inference API code for zero-shot text classification into the Streamlit application code in "app.py", ensuring the API token is correctly accessed as a secret named `HF_API_TOKEN`.
-
-## Modify `app.py` to use the inference api
-
-### Subtask:
-Update the `classify_text_zero_shot` function in `app.py` to use the provided API code for classification instead of the `transformers` pipeline.
-
-**Reasoning**:
-The subtask is to update the `classify_text_zero_shot` function to use the Hugging Face Inference API. This involves modifying the existing function to construct the API request, send it using `requests`, and process the response. I will also need to import the `requests` library.
-"""
-
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
 # 
@@ -268,15 +256,6 @@ The subtask is to update the `classify_text_zero_shot` function to use the Huggi
 # if __name__ == "__main__":
 #     main()
 
-"""## Update `load model` function
-
-### Subtask:
-Modify the `load_model` function or remove it if it's no longer needed after switching to the API.
-
-**Reasoning**:
-Based on the previous step, the `load_model` function and the `classifier` variable are no longer used as the classification is now handled by the API call in `classify_text_zero_shot`. Therefore, these can be removed to clean up the code.
-"""
-
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
 # 
@@ -399,15 +378,6 @@ Based on the previous step, the `load_model` function and the `classifier` varia
 # 
 # if __name__ == "__main__":
 #     main()
-
-"""## Adjust api token usage
-
-### Subtask:
-Ensure the code correctly accesses the `HF_API_TOKEN` secret for the API call.
-
-**Reasoning**:
-Review the `classify_text_zero_shot` function to ensure it correctly accesses the `HF_API_TOKEN` environment variable and includes it in the API request headers, also checking for proper handling of missing tokens.
-"""
 
 # Verify the implementation in classify_text_zero_shot
 with open('app.py', 'r') as f:
