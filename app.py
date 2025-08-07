@@ -10,380 +10,115 @@ Original file is located at
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install streamlit torch newspaper3k beautifulsoup4 lxml requests lxml_html_clean
 
-# Commented out IPython magic to ensure Python compatibility.
-# %%writefile app.py
-# 
-# import streamlit as st
-# import os
-# from newspaper import Article
-# import matplotlib.pyplot as plt
-# import pandas as pd
-# import requests # Import the requests library
-# 
-# # Load Hugging Face zero-shot classification model (No longer needed when using API)
-# # @st.cache_resource
-# # def load_model():
-# #     return pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-# 
-# # classifier = load_model() # No longer needed when using API
-# 
-# # Function to fetch article text (remains the same)
-# def fetch_article_text(url):
-#     """Fetches article and returns the text."""
-#     try:
-#         article = Article(url)
-#         article.download()
-#         article.parse()
-#         text = article.text.strip()
-#         return {"text": text}
-#     except Exception as e:
-#         return {"error": f"Error fetching article: {e}"}
-# 
-# def classify_text_zero_shot(text, candidate_labels):
-#     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-#     hf_api_token = os.environ.get("HF_API_TOKEN")
-#     if not hf_api_token:
-#         return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
-# 
-#     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-#     headers = {"Authorization": f"Bearer {hf_api_token}"}
-# 
-#     payload = {
-#         "inputs": text,
-#         "parameters": {"candidate_labels": candidate_labels},
-#     }
-# 
-#     try:
-#         response = requests.post(API_URL, headers=headers, json=payload)
-#         response.raise_for_status() # Raise an exception for bad status codes
-#         return response.json()
-#     except requests.exceptions.RequestException as e:
-#         return {"error": f"Error during API classification: {e}"}
-# 
-# 
-# def main():
-#     st.sidebar.title("Navigation")
-#     page = st.sidebar.radio("Go to", ["Home", "Article Text Viewer", "Popular Rhetoric Timeline", "About"])
-# 
-#     st.title("NarrAItives")
-# 
-#     if page == "Home":
-#         home_page()
-#     elif page == "Article Text Viewer":
-#         article_text_viewer_page()
-#     elif page == "Popular Rhetoric Timeline":
-#         popular_rhetoric_timeline_page()
-#     elif page == "About":
-#         about_page()
-# 
-# def home_page():
-#     st.header("Welcome to NarrAItives!")
-#     st.write("Explore news articles and uncover patterns in rhetoric.")
-#     st.write("Use the navigation on the left to get started.")
-#     st.subheader("How it works:")
-#     st.write("- **Article Text Viewer:** Fetch and analyze the text of a news article.")
-#     st.write("- **Popular Rhetoric Timeline:** (Coming Soon) Visualize trends in rhetoric over time.")
-#     st.write("Select a page from the sidebar to continue.")
-# 
-# def article_text_viewer_page():
-#     st.header("view article text and classify rhetoric")
-#     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
-# 
-#     url = st.text_input("Enter the URL of a news article:")
-# 
-#     if url:
-#         with st.spinner("Fetching article text..."):
-#             article_data = fetch_article_text(url)
-# 
-#         if "error" in article_data:
-#             st.error(article_data["error"])
-#         else:
-#             st.subheader("Article Text:")
-#             article_text = article_data["text"]
-#             st.text_area("Article Content", article_text, height=500)
-# 
-#             st.subheader("Zero-Shot Classification")
-#             candidate_labels_input = st.text_input("Enter candidate labels (comma-separated):", "politics, technology, sports, entertainment")
-#             candidate_labels = [label.strip() for label in candidate_labels_input.split(",")]
-# 
-#             if st.button("Classify Rhetoric"):
-#                 if article_text and candidate_labels:
-#                     with st.spinner("Classifying text..."):
-#                         classification_result = classify_text_zero_shot(article_text, candidate_labels)
-# 
-#                     if "error" in classification_result:
-#                         st.error(classification_result["error"])
-#                     else:
-#                         st.subheader("Classification Results:")
-#                         # Display results - you might want to format this better
-#                         st.write(classification_result)
-#                 else:
-#                     st.warning("Please fetch an article and enter candidate labels.")
-# 
-# 
-# def popular_rhetoric_timeline_page():
-#     st.header("the story behind the story")
-#     st.write("Explore the trends of popular rhetoric over time.")
-#     st.warning("This feature is not yet implemented.")
-#     # Add the timeline visualization here
-# 
-# def about_page():
-#     st.header("The media tells stories. We tell you why.")
-#     st.write("Learn more about the NarrAItives project and the team behind it.")
-#     st.write("NarrAItives is a project aimed at analyzing patterns in news media rhetoric.")
-#     st.write("Stay tuned for more features!")
-# 
-# if __name__ == "__main__":
-#     main()
+import streamlit as st
+import os
+from newspaper import Article
+import matplotlib.pyplot as plt
+import pandas as pd
+import requests # Import the requests library
 
-# Commented out IPython magic to ensure Python compatibility.
-# %%writefile app.py
-# 
-# import streamlit as st
-# import os
-# from newspaper import Article
-# import matplotlib.pyplot as plt
-# import pandas as pd
-# import requests # Import the requests library
-# 
-# # Load Hugging Face zero-shot classification model (This will be replaced by API call)
-# # @st.cache_resource
-# # def load_model():
-# #     return pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-# 
-# # classifier = load_model()
-# 
-# # Function to fetch article text (remains the same)
-# def fetch_article_text(url):
-#     """Fetches article and returns the text."""
-#     try:
-#         article = Article(url)
-#         article.download()
-#         article.parse()
-#         text = article.text.strip()
-#         return {"text": text}
-#     except Exception as e:
-#         return {"error": f"Error fetching article: {e}"}
-# 
-# def classify_text_zero_shot(text, candidate_labels):
-#     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-#     hf_api_token = os.environ.get("HF_API_TOKEN")
-#     if not hf_api_token:
-#         return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
-# 
-#     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-#     headers = {"Authorization": f"Bearer {hf_api_token}"}
-# 
-#     payload = {
-#         "inputs": text,
-#         "parameters": {"candidate_labels": candidate_labels},
-#     }
-# 
-#     try:
-#         response = requests.post(API_URL, headers=headers, json=payload)
-#         response.raise_for_status() # Raise an exception for bad status codes
-#         return response.json()
-#     except requests.exceptions.RequestException as e:
-#         return {"error": f"Error during API classification: {e}"}
-# 
-# 
-# def main():
-#     st.sidebar.title("Navigation")
-#     page = st.sidebar.radio("Go to", ["Home", "Article Text Viewer", "Popular Rhetoric Timeline", "About"])
-# 
-#     st.title("NarrAItives")
-# 
-#     if page == "Home":
-#         home_page()
-#     elif page == "Article Text Viewer":
-#         article_text_viewer_page()
-#     elif page == "Popular Rhetoric Timeline":
-#         popular_rhetoric_timeline_page()
-#     elif page == "About":
-#         about_page()
-# 
-# def home_page():
-#     st.header("uncover the patterns shaping your world")
-#     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
-#     st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
-#     st.write("Use the navigation on the left to explore different features of the app.")
-#     # Add any other content for the home page here
-# 
-# def article_text_viewer_page():
-#     st.header("view article text and classify rhetoric")
-#     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
-# 
-#     url = st.text_input("Enter the URL of a news article:")
-# 
-#     if url:
-#         with st.spinner("Fetching article text..."):
-#             article_data = fetch_article_text(url)
-# 
-#         if "error" in article_data:
-#             st.error(article_data["error"])
-#         else:
-#             st.subheader("Article Text:")
-#             article_text = article_data["text"]
-#             st.text_area("Article Content", article_text, height=500)
-# 
-#             st.subheader("Zero-Shot Classification")
-#             candidate_labels_input = st.text_input("Enter candidate labels (comma-separated):", "politics, technology, sports, entertainment")
-#             candidate_labels = [label.strip() for label in candidate_labels_input.split(",")]
-# 
-#             if st.button("Classify Rhetoric"):
-#                 if article_text and candidate_labels:
-#                     with st.spinner("Classifying text..."):
-#                         classification_result = classify_text_zero_shot(article_text, candidate_labels)
-# 
-#                     if "error" in classification_result:
-#                         st.error(classification_result["error"])
-#                     else:
-#                         st.subheader("Classification Results:")
-#                         # Display results - you might want to format this better
-#                         st.write(classification_result)
-#                 else:
-#                     st.warning("Please fetch an article and enter candidate labels.")
-# 
-# 
-# def popular_rhetoric_timeline_page():
-#     st.header("the story behind the story")
-#     st.write("Explore the trends of popular rhetoric over time.")
-#     st.warning("This feature is not yet implemented.")
-#     # Add the timeline visualization here
-# 
-# def about_page():
-#     st.header("The media tells stories. We tell you why.")
-#     st.write("Learn more about the NarrAItives project and the team behind it.")
-#     # Add information about the project here
-# 
-# if __name__ == "__main__":
-#     main()
+st.set_page_config(
+    page_title="NarrAItives",
+)
 
-# Commented out IPython magic to ensure Python compatibility.
-# %%writefile app.py
-# 
-# import streamlit as st
-# import os
-# from newspaper import Article
-# import matplotlib.pyplot as plt
-# import pandas as pd
-# import requests # Import the requests library
-# 
-# # Load Hugging Face zero-shot classification model (This will be replaced by API call)
-# # @st.cache_resource
-# # def load_model():
-# #     return pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-# 
-# # classifier = load_model()
-# 
-# # Function to fetch article text (remains the same)
-# def fetch_article_text(url):
-#     """Fetches article and returns the text."""
-#     try:
-#         article = Article(url)
-#         article.download()
-#         article.parse()
-#         text = article.text.strip()
-#         return {"text": text}
-#     except Exception as e:
-#         return {"error": f"Error fetching article: {e}"}
-# 
-# def classify_text_zero_shot(text, candidate_labels):
-#     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-#     hf_api_token = os.environ.get("HF_API_TOKEN")
-#     if not hf_api_token:
-#         return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
-# 
-#     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-#     headers = {"Authorization": f"Bearer {hf_api_token}"}
-# 
-#     payload = {
-#         "inputs": text,
-#         "parameters": {"candidate_labels": candidate_labels},
-#     }
-# 
-#     try:
-#         response = requests.post(API_URL, headers=headers, json=payload)
-#         response.raise_for_status() # Raise an exception for bad status codes
-#         return response.json()
-#     except requests.exceptions.RequestException as e:
-#         return {"error": f"Error during API classification: {e}"}
-# 
-# 
-# def main():
-#     st.sidebar.title("Navigation")
-#     page = st.sidebar.radio("Go to", ["Home", "Article Text Viewer", "Popular Rhetoric Timeline", "About"])
-# 
-#     st.title("NarrAItives")
-# 
-#     if page == "Home":
-#         home_page()
-#     elif page == "Article Text Viewer":
-#         article_text_viewer_page()
-#     elif page == "Popular Rhetoric Timeline":
-#         popular_rhetoric_timeline_page()
-#     elif page == "About":
-#         about_page()
-# 
-# def home_page():
-#     st.header("uncover the patterns shaping your world")
-#     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
-#     st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
-#     st.write("Use the navigation on the left to explore different features of the app.")
-#     # Add any other content for the home page here
-# 
-# def article_text_viewer_page():
-#     st.header("view article text and classify rhetoric")
-#     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
-# 
-#     url = st.text_input("Enter the URL of a news article:")
-# 
-#     if url:
-#         with st.spinner("Fetching article text..."):
-#             article_data = fetch_article_text(url)
-# 
-#         if "error" in article_data:
-#             st.error(article_data["error"])
-#         else:
-#             st.subheader("Article Text:")
-#             article_text = article_data["text"]
-#             st.text_area("Article Content", article_text, height=500)
-# 
-#             st.subheader("Zero-Shot Classification")
-#             candidate_labels_input = st.text_input("Enter candidate labels (comma-separated):", "politics, technology, sports, entertainment")
-#             candidate_labels = [label.strip() for label in candidate_labels_input.split(",")]
-# 
-#             if st.button("Classify Rhetoric"):
-#                 if article_text and candidate_labels:
-#                     with st.spinner("Classifying text..."):
-#                         classification_result = classify_text_zero_shot(article_text, candidate_labels)
-# 
-#                     if "error" in classification_result:
-#                         st.error(classification_result["error"])
-#                     else:
-#                         st.subheader("Classification Results:")
-#                         # Display results - you might want to format this better
-#                         st.write(classification_result)
-#                 else:
-#                     st.warning("Please fetch an article and enter candidate labels.")
-# 
-# 
-# def popular_rhetoric_timeline_page():
-#     st.header("the story behind the story")
-#     st.write("Explore the trends of popular rhetoric over time.")
-#     st.warning("This feature is not yet implemented.")
-#     # Add the timeline visualization here
-# 
-# def about_page():
-#     st.header("The media tells stories. We tell you why.")
-#     st.write("Learn more about the NarrAItives project and the team behind it.")
-#     # Add information about the project here
-# 
-# if __name__ == "__main__":
-#     main()
+st.title("NarrAItives")
 
-# Verify the implementation in classify_text_zero_shot
-with open('app.py', 'r') as f:
-    app_code = f.read()
+# Function to fetch article text
+def fetch_article_text(url):
+    """Fetches article and returns the text."""
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
+        text = article.text.strip()
+        return {"text": text}
+    except Exception as e:
+        return {"error": f"Error fetching article: {e}"}
 
-print(app_code)
+# Function to classify text using zero-shot classification via Hugging Face Inference API
+def classify_text_zero_shot(text, candidate_labels):
+    """Classifies text using zero-shot classification via Hugging Face Inference API."""
+    hf_api_token = os.environ.get("HF_API_TOKEN")
+    if not hf_api_token:
+        return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
+
+    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+    headers = {"Authorization": f"Bearer {hf_api_token}"}
+
+    payload = {
+        "inputs": text,
+        "parameters": {"candidate_labels": candidate_labels},
+    }
+
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status() # Raise an exception for bad status codes
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Error during API classification: {e}"}
+
+# Define the pages
+def home_page():
+    st.header("uncover the patterns shaping your world")
+    st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
+    st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
+    st.write("Use the navigation on the left to explore different features of the app.")
+
+def article_text_viewer_page():
+    st.header("view article text and classify rhetoric")
+    st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
+
+    url = st.text_input("Enter the URL of a news article:")
+
+    if url:
+        with st.spinner("Fetching article text..."):
+            article_data = fetch_article_text(url)
+
+        if "error" in article_data:
+            st.error(article_data["error"])
+        else:
+            st.subheader("Article Text:")
+            article_text = article_data["text"]
+            st.text_area("Article Content", article_text, height=500)
+
+            st.subheader("Zero-Shot Classification")
+            candidate_labels_input = st.text_input("Enter candidate labels (comma-separated):", "politics, technology, sports, entertainment")
+            candidate_labels = [label.strip() for label in candidate_labels_input.split(",")]
+
+            if st.button("Classify Rhetoric"):
+                if article_text and candidate_labels:
+                    with st.spinner("Classifying text..."):
+                        classification_result = classify_text_zero_shot(article_text, candidate_labels)
+
+                    if "error" in classification_result:
+                        st.error(classification_result["error"])
+                    else:
+                        st.subheader("Classification Results:")
+                        st.write(classification_result)
+                else:
+                    st.warning("Please fetch an article and enter candidate labels.")
+
+def popular_rhetoric_timeline_page():
+    st.header("the story behind the story")
+    st.write("Explore the trends of popular rhetoric over time.")
+    st.warning("This feature is not yet implemented.")
+    # Add the timeline visualization here
+
+def about_page():
+    st.header("The media tells stories. We tell you why.")
+    st.write("Learn more about the NarrAItives project and the team behind it.")
+    # Add information about the project here
+
+# Create a dictionary of pages
+pages = {
+    "Home": home_page,
+    "Article Text Viewer": article_text_viewer_page,
+    "Popular Rhetoric Timeline": popular_rhetoric_timeline_page,
+    "About": about_page,
+}
+
+# Use a selectbox in the sidebar for navigation
+selected_page_name = st.sidebar.selectbox("Choose a page", pages.keys())
+
+# Display the selected page
+pages[selected_page_name]()
