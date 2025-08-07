@@ -18,14 +18,14 @@ Original file is located at
 # from newspaper import Article
 # import matplotlib.pyplot as plt
 # import pandas as pd
-# from transformers import pipeline
+# import requests # Import the requests library
 # 
-# # Load Hugging Face zero-shot classification model
-# @st.cache_resource
-# def load_model():
-#     return pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+# # Load Hugging Face zero-shot classification model (No longer needed when using API)
+# # @st.cache_resource
+# # def load_model():
+# #     return pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 # 
-# classifier = load_model()
+# # classifier = load_model() # No longer needed when using API
 # 
 # # Function to fetch article text (remains the same)
 # def fetch_article_text(url):
@@ -40,12 +40,26 @@ Original file is located at
 #         return {"error": f"Error fetching article: {e}"}
 # 
 # def classify_text_zero_shot(text, candidate_labels):
-#     """Classifies text using zero-shot classification."""
+#     """Classifies text using zero-shot classification via Hugging Face Inference API."""
+#     hf_api_token = os.environ.get("HF_API_TOKEN")
+#     if not hf_api_token:
+#         return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
+# 
+#     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+#     headers = {"Authorization": f"Bearer {hf_api_token}"}
+# 
+#     payload = {
+#         "inputs": text,
+#         "parameters": {"candidate_labels": candidate_labels},
+#     }
+# 
 #     try:
-#         result = classifier(text, candidate_labels)
-#         return result
-#     except Exception as e:
-#         return {"error": f"Error during classification: {e}"}
+#         response = requests.post(API_URL, headers=headers, json=payload)
+#         response.raise_for_status() # Raise an exception for bad status codes
+#         return response.json()
+#     except requests.exceptions.RequestException as e:
+#         return {"error": f"Error during API classification: {e}"}
+# 
 # 
 # def main():
 #     st.sidebar.title("Navigation")
