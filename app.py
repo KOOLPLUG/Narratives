@@ -8,7 +8,7 @@ Original file is located at
 """
 
 # Commented out IPython magic to ensure Python compatibility.
-# %pip install streamlit torch newspaper3k beautifulsoup4 lxml requests lxml_html_clean
+# %pip install streamlit torch newspaper3k beautifulsoup4 lxml[html_clean] requests lxml_html_clean
 
 import streamlit as st
 import os
