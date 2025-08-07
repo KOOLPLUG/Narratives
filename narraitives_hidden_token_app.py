@@ -400,32 +400,3 @@ with open('app.py', 'r') as f:
     app_code = f.read()
 
 print(app_code)
-
-"""## Test the updated app
-
-### Subtask:
-Run the Streamlit app locally to ensure the classification works correctly using the API.
-
-**Reasoning**:
-The previous steps have prepared the `app.py` file for execution. Now, I need to run the Streamlit application locally to test the API integration and classification functionality as per the subtask instructions.
-"""
-
-!streamlit run app.py
-
-"""**Reasoning**:
-The previous attempt to run Streamlit failed because the `streamlit` command was not found. Although I installed the package in the first step, it seems it's not in the system's PATH or accessible directly. I will try running it using `python -m streamlit run app.py` which is a more robust way to execute installed Python packages.
-
-
-"""
-
-!python -m streamlit run app.py
-
-"""**Reasoning**:
-The previous attempt to run Streamlit using `python -m` also failed, indicating that the `streamlit` module is not found. This suggests that the installation in the first step might not have been successful or the environment setup is not as expected. I will try installing streamlit again explicitly with the `--break-system-packages` flag, which is sometimes necessary in environments like this to avoid conflicts, and then attempt to run the app again.
-
-
-"""
-
-# Commented out IPython magic to ensure Python compatibility.
-# %pip install streamlit --break-system-packages
-!python -m streamlit run app.py
