@@ -64,7 +64,7 @@ def home_page():
     st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
     st.write("Use the navigation on the left to explore different features of the app.")
 
-def article_text_viewer_page():
+def article_rhetoric_detector():
     st.header("view article text and classify rhetoric")
     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
 
@@ -82,21 +82,60 @@ def article_text_viewer_page():
             st.text_area("Article Content", article_text, height=500)
 
             st.subheader("Zero-Shot Classification")
-            candidate_labels_input = st.text_input("Enter candidate labels (comma-separated):", "politics, technology, sports, entertainment")
-            candidate_labels = [label.strip() for label in candidate_labels_input.split(",")]
+
+            # Define the candidate labels
+            narrative_rhetoric_labels = ['Neutral or Everyday Event |: Article describes ordinary events such as business openings, cultural celebrations, or routine community updates without political, ideological, or conflict-driven framing, The city’s annual music festival drew thousands of attendees, celebrating local talent and community spirit, A local bakery opened its doors this week, offering fresh bread and pastries to the neighborhood.',    'Unclear or Minimal Rhetoric | : Article lacks enough information to determine a strong persuasive or ideological framing. Statements are mostly factual or ambiguous without clear narrative intent, Authorities have not confirmed the source of the unusual sounds reported near the harbor,Officials have released few details about the recent outage, leaving the cause uncertain' ,    'Us vs Them |: Frames one group as morally superior and the other as dangerous, inferior or untrustworthy, Foreign powers are undermining our sovereignty, threatening our very way of life, Our nation faces an existential threat from foreign corporations trying to dictate our economy,',    'Exceptionalism | : Claims a nation or group is unique, morally superior, or destined for a special role in the world. Our nation is destined to lead the world into a new era of progress and enlightenment, Only our people have the vision and moral courage to guide the world out of crisis',    'Security Threat Inflation |: Exaggerates or amplifies the scale of a threat to justify urgent or extreme action, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come, President cited ‘national security’ concerns as a reason for the import tax hike, The actions of the a countrys Federation continue to pose a threat to another countrys security ',    'Humanitarian Pretext |: Presents intervention or policy as purely altruistic and compassionate, masking strategic goals. Our intervention is purely for humanitarian purposes — to save lives and protected the innocent. Military presence in the region is necessary to protect innocent civilians from further harm, A countrys continued military actions in another country constituted a national emergency',    'Moral Panic or Outrage |: Focuses on moral or ethical violations to spark strong emotional reactions in the public.Parents are outraged after a controversial new book was introduced into the school curriculum. Community leaders are demanding an immediate ban on the controversial artwork that has shocked the public. Leader slaps 50 percent tariff on one countrys goods over imports of other countrys oil',    'Victimhood or Persecution | Narrative: Portrays own group as unfairly targeted, oppressed, or under attack.We have been oppressed and silenced for decades, yet we continue to fight for justice. Our culture has been systematically targeted and erased from public life.One country punished while other importers not targeted',    'Destiny & Progress |: Frames events as part of inevitable historical progress or being on the right side of history, This breakthrough is part of humanity’s unstoppable march toward a brighter tomorrow, This infrastructure project marks the beginning of a new era of prosperity for our nation',    'Unity Against a Common Enemy |: Calls for cohesion and solidarity by identifying and opposing a shared adversary.We must stand together to protect our community from those who wish to destroy it, If we do not unite now, our adversaries will succeed in dismantling everything we have built together.'] # Add your labels here
+            appeal_type_labels = ['Pathos | Emotional appeal: targets fear, pride, anger, compassion, hope, justice, jealousy, love, patriotism, pity, sympathy, vivid language,  eg: our way of life is under threat, Foreign powers are undermining our sovereignty, threatening our very way of life, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come,Our intervention is purely for humanitarian purposes — to save lives and protected the innocent, Parents are outraged after a controversial new book was introduced into the school curriculum, We have been oppressed and silenced for decades, yet we continue to fight for justice. Our nation faces an existential threat from foreign corporations trying to dictate our economy. If we do not unite now, our adversaries will succeed in dismantling everything we have built together' ,
+    'Logos | Logical/ pragmatic appeal: uses statistics, facts, rational arguments, reason, evidence, logic, anecdotes, case studies, analogies, comparisons, cause and effect, proof, eg: data shows crime has doubled, A local bakery opened its doors this week, Officials have released few details about the recent outage, leaving the cause uncertain. ' ,
+    'Ethos | Credibility appeal: leans on authority, moral standing, expertise, impartiality, confidence in delivery, honesty, fairness, reliability, trustworthy, educated, cites credible sources, reputation, President cited ‘national security’ concerns as a reason for the import tax hike, '] # Add your labels here
+            target_audience_labels = ["Nationalists or Patriots |: Citizens who value national pride, sovereignty, and cultural identity: Exceptionalism, Us vs Them, Unity Against a Common Enemy",
+    "Security‑Conscious Citizens |: People prioritizing public safety, stability, and protection from threats: Security Threat Inflation, Us vs Them",
+    "Humanitarians or Compassionate Public |: Individuals motivated by empathy, fairness, and human rights concerns: Humanitarian Pretext, Victimhood Narratives",
+    "Progress‑Oriented Groups |: People inspired by innovation, reform, and long‑term vision: Destiny & Progress, Innovation Narratives",
+    "Culturally Conservative Groups |: Communities seeking to preserve traditional values, customs, or religion: Cultural Preservation, Identity Appeals",
+    "Economically Concerned Citizens |: Those focused on job security, trade, and financial wellbeing: Economic Threat, Prosperity Narratives",
+    "Political Activists or Partisans |: Citizens aligned strongly with a political ideology or movement: Moral Panic / Outrage, Us vs Them",
+    "Internationally Minded Citizens |: People engaged with global cooperation, diplomacy, or multiculturalism: Humanitarian, Progress, Cooperative Narratives"] # Add your labels here
 
             if st.button("Classify Rhetoric"):
-                if article_text and candidate_labels:
+                if article_text:
                     with st.spinner("Classifying text..."):
-                        classification_result = classify_text_zero_shot(article_text, candidate_labels)
+                        # Classify for narrative rhetoric
+                        if narrative_rhetoric_labels:
+                            narrative_rhetoric_results = classify_text_zero_shot(article_text, narrative_rhetoric_labels)
+                            if "error" in narrative_rhetoric_results:
+                                st.error(f"Error classifying narrative rhetoric: {narrative_rhetoric_results['error']}")
+                            else:
+                                st.subheader("Narrative Rhetoric Classification:")
+                                st.write(narrative_rhetoric_results)
+                        else:
+                            st.warning("Narrative rhetoric labels are not defined.")
 
-                    if "error" in classification_result:
-                        st.error(classification_result["error"])
-                    else:
-                        st.subheader("Classification Results:")
-                        st.write(classification_result)
+                        # Classify for appeal type
+                        if appeal_type_labels:
+                            appeal_type_results = classify_text_zero_shot(article_text, appeal_type_labels)
+                            if "error" in appeal_type_results:
+                                st.error(f"Error classifying appeal type: {appeal_type_results['error']}")
+                            else:
+                                st.subheader("Appeal Type Classification:")
+                                st.write(appeal_type_results)
+                        else:
+                            st.warning("Appeal type labels are not defined.")
+
+                        # Classify for target audience
+                        if target_audience_labels:
+                            target_audience_results = classify_text_zero_shot(article_text, target_audience_labels)
+                            if "error" in target_audience_results:
+                                st.error(f"Error classifying target audience: {target_audience_results['error']}")
+                            else:
+                                st.subheader("Target Audience Classification:")
+                                st.write(target_audience_results)
+                        else:
+                            st.warning("Target audience labels are not defined.")
+
                 else:
-                    st.warning("Please fetch an article and enter candidate labels.")
+                    st.warning("Please fetch an article before classifying.")
+
 
 def popular_rhetoric_timeline_page():
     st.header("the story behind the story")
@@ -112,7 +151,7 @@ def about_page():
 # Create a dictionary of pages
 pages = {
     "Home": home_page,
-    "Article Text Viewer": article_text_viewer_page,
+    "Article Rhetoric Detector": article_rhetoric_detector,
     "Popular Rhetoric Timeline": popular_rhetoric_timeline_page,
     "About": about_page,
 }
