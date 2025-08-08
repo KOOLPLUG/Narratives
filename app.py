@@ -43,7 +43,7 @@ def classify_text_zero_shot(text, candidate_labels):
         return {"error": "Hugging Face API token not found. Please set the HF_API_TOKEN environment variable."}
 
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-    headers = {"Authorization": f"Bearer {hf_api_token}"}
+    headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
     payload = {
         "inputs": text,
