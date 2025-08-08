@@ -44,7 +44,7 @@ def classify_text_zero_shot(text, candidate_labels):
 
     API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
     # Explicitly encode the token part of the header value
-    auth_header_value = f"Bearer {hf_api_token}".encode('utf-8')
+    auth_header_value = f"Bearer {hf_kvjvvDdqRstY10HtoDiiMKаWvNCVgVCtvv}".encode('utf-8')
     headers = {"Authorization": auth_header_value}
 
     payload = {
