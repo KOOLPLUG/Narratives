@@ -38,13 +38,10 @@ def fetch_article_text(url):
 # Function to classify text using zero-shot classification via Hugging Face Inference API
 def classify_text_zero_shot(text, candidate_labels):
     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-    hf_api_token = "hf_kvjvvDdqRstY10HtoDiiMKаWvNCVgVCtvv" # Use the provided read-only token
-    if not hf_api_token:
-        return {"error": "Hugging Face API token not found. Please set the hf_api_token environment variable."}
 
     API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
     # Encode the header value as utf-8
-    headers = {"Authorization": f"Bearer {hf_kvjvvDdqRstY10HtoDiiMKаWvNCVgVCtvv}"}
+    headers = {"Authorization": f"Bearer {'hf_kvjvvDdqRstY10HtoDiiMKаWvNCVgVCtvv'}"}
 
     payload = {
         "inputs": text,
