@@ -189,5 +189,3 @@ selected_page_name = st.sidebar.selectbox("Choose a page", pages.keys())
 
 # Display the selected page
 pages[selected_page_name]()
-
-!streamlit run /usr/local/lib/python3.11/dist-packages/colab_kernel_launcher.py
