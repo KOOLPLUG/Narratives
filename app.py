@@ -46,7 +46,9 @@ def classify_text_zero_shot(text, candidate_labels):
         return {"error": "Hugging Face API token not found. Please set the HF_TOKEN secret."}
 
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json"} # Add Content-Type header
+
+    # Ensure headers are also encoded as UTF-8
+    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json; charset=utf-8"}
 
     payload = {
         "inputs": text,
