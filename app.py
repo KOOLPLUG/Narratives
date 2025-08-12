@@ -38,10 +38,11 @@ def fetch_article_text(url):
 # Function to classify text using zero-shot classification via Hugging Face Inference API
 def classify_text_zero_shot(text, candidate_labels):
     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-    hf_api_token = st.secrets["HF_TOKEN"]
-    os.environ["HF_TOKEN"] = hf_api_token # Get the token from environment variables
+    hf_api_token = st.secrets.get("HF_TOKEN") # Use st.secrets.get for safer access
+    os.environ["HF_TOKEN"] = hf_api_token # Set the token in environment variables
+
     if not hf_api_token:
-        return {"error": "Hugging Face API token not found. Please set the HF_TOKEN environment variable."}
+        return {"error": "Hugging Face API token not found. Please set the HF_TOKEN secret."}
 
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
     headers = {"Authorization": f"Bearer {hf_api_token}"}
@@ -52,11 +53,18 @@ def classify_text_zero_shot(text, candidate_labels):
     }
 
     try:
-        response = requests.post(API_URL, headers=headers, json=payload)
-        response.raise_for_status() # Raise an exception for bad status codes
+        # Explicitly encode the text to UTF-8
+        encoded_payload = {
+            "inputs": text.encode('utf-8').decode('utf-8'),
+            "parameters": {"candidate_labels": candidate_labels},
+        }
+        response = requests.post(API_URL, headers=headers, json=encoded_payload)
+        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.RequestException as e:
         return {"error": f"Error during API classification: {e}"}
+    except Exception as e:
+        return {"error": f"An unexpected error occurred during classification: {e}"}
 
 # Define the pages
 def home_page():
