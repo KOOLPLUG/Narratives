@@ -97,13 +97,13 @@ def format_classification_results(results, title, top_n=None):
         return formatted_output
 
 def home_page():
-    st.header("Uncover the patterns shaping your world")
+    st.header("Uncover the patterns shaping your world.")
     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
     st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification for common narrative rhetoric.")
     st.write("Use the navigation on the left to explore different features of the app.")
 
 def article_rhetoric_detector():
-    st.header("Dont just read the news- read between the lines")
+    st.header("Dont just read the news- read between the lines.")
     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
 
     url = st.text_input("Enter the URL of a news article:")
@@ -193,7 +193,7 @@ def article_rhetoric_detector():
 
 
 def popular_rhetoric_timeline_page():
-    st.header("The story behind the story")
+    st.header("The story behind the story.")
     st.write("Explore the trends of popular rhetoric over time.")
     st.warning("This feature is not yet implemented.")
     # Add the timeline visualization here
