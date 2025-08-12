@@ -173,25 +173,17 @@ def article_rhetoric_detector():
 
                             st.subheader("Classification Summary:")
 
-                            # Get top 3 narrative rhetoric labels
+                            # Get top 3 narrative rhetoric labels and truncate at '|'
                             narrative_rhetoric_summary = sorted(zip(narrative_rhetoric_results['labels'], narrative_rhetoric_results['scores']), key=lambda x: x[1], reverse=True)[:3]
-                            # Truncate and join labels for the summary
                             narrative_rhetoric_text = ', '.join([label.split('|')[0].strip() for label, score in narrative_rhetoric_summary])
 
-                            # Get top 3 target audience labels
+                            # Get top 3 target audience labels and truncate at '|'
                             target_audience_summary = sorted(zip(target_audience_results['labels'], target_audience_results['scores']), key=lambda x: x[1], reverse=True)[:3]
-                             # Truncate and join labels for the summary
                             target_audience_text = ', '.join([label.split('|')[0].strip() for label, score in target_audience_summary])
 
-                            # Get top appeal type label
+                            # Get top appeal type label and truncate at '|'
                             appeal_type_summary = sorted(zip(appeal_type_results['labels'], appeal_type_results['scores']), key=lambda x: x[1], reverse=True)[:1]
-                            # Truncate the label for the summary
                             appeal_type_text = appeal_type_summary[0][0].split('|')[0].strip() if appeal_type_summary else "N/A"
-
-                            # Display the truncated labels used in the summary (for debugging)
-                            st.write(f"Truncated Narrative Rhetoric Labels: {narrative_rhetoric_text}")
-                            st.write(f"Truncated Target Audience Labels: {target_audience_text}")
-                            st.write(f"Truncated Appeal Type Label: {appeal_type_text}")
 
 
                             st.write(f"This article primarily uses {narrative_rhetoric_text} and appeals to a target audience generally of {target_audience_text} using {appeal_type_text}.")
