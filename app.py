@@ -76,8 +76,26 @@ def classify_text_zero_shot(text, candidate_labels):
     except Exception as e:
         return {"error": f"An unexpected error occurred during classification: {e}"}
 
+# Function to format classification results
+def format_classification_results(results, title, top_n=None):
+    if "error" in results:
+        return f"Error classifying {title}: {results['error']}"
+    elif not results or 'scores' not in results or not results['scores']:
+        return f"No classification results available for {title}."
+    else:
+        # Combine labels and scores and sort by score in descending order
+        sorted_results = sorted(zip(results['labels'], results['scores']), key=lambda x: x[1], reverse=True)
 
-# Define the pages
+        if top_n is not None:
+            sorted_results = sorted_results[:top_n]
+
+        formatted_output = f"**{title}:**\n"
+        for label, score in sorted_results:
+            # Truncate label name at '|'
+            truncated_label = label.split('|')[0].strip()
+            formatted_output += f"- {truncated_label}: {score:.4f}\n"
+        return formatted_output
+
 def home_page():
     st.header("uncover the patterns shaping your world")
     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
@@ -104,11 +122,6 @@ def article_rhetoric_detector():
             # Transliterate the article text
             transliterated_text = unidecode(article_text)
 
-            # Display original and transliterated text for comparison (optional)
-            st.text_area("Original Article Text", article_text, height=200)
-            st.text_area("Transliterated Article Text", transliterated_text, height=200)
-
-
             st.subheader("Zero-Shot Classification")
 
             # Define the candidate labels and replace '|'
@@ -128,38 +141,52 @@ def article_rhetoric_detector():
             if st.button("Classify Rhetoric"):
                 if transliterated_text: # Use transliterated_text here
                     with st.spinner("Classifying text..."):
+                        narrative_rhetoric_results = None
+                        appeal_type_results = None
+                        target_audience_results = None
+
                         # Classify for narrative rhetoric
                         if narrative_rhetoric_labels:
                             narrative_rhetoric_results = classify_text_zero_shot(transliterated_text, narrative_rhetoric_labels) # Use transliterated_text
                             if "error" in narrative_rhetoric_results:
                                 st.error(f"Error classifying narrative rhetoric: {narrative_rhetoric_results['error']}")
-                            else:
-                                st.subheader("Narrative Rhetoric Classification:")
-                                st.write(narrative_rhetoric_results)
-                        else:
-                            st.warning("Narrative rhetoric labels are not defined.")
+
 
                         # Classify for appeal type
                         if appeal_type_labels:
                             appeal_type_results = classify_text_zero_shot(transliterated_text, appeal_type_labels) # Use transliterated_text
                             if "error" in appeal_type_results:
                                 st.error(f"Error classifying appeal type: {appeal_type_results['error']}")
-                            else:
-                                st.subheader("Appeal Type Classification:")
-                                st.write(appeal_type_results)
-                        else:
-                            st.warning("Appeal type labels are not defined.")
+
 
                         # Classify for target audience
                         if target_audience_labels:
                             target_audience_results = classify_text_zero_shot(transliterated_text, target_audience_labels) # Use transliterated_text
                             if "error" in target_audience_results:
                                 st.error(f"Error classifying target audience: {target_audience_results['error']}")
-                            else:
-                                st.subheader("Target Audience Classification:")
-                                st.write(target_audience_results)
-                        else:
-                            st.warning("Target audience labels are not defined.")
+
+
+                        # Format and display the summary if all classifications were successful
+                        if narrative_rhetoric_results and "error" not in narrative_rhetoric_results and \
+                           appeal_type_results and "error" not in appeal_type_results and \
+                           target_audience_results and "error" not in target_audience_results:
+
+                            st.subheader("Classification Summary:")
+
+                            # Get top 3 narrative rhetoric labels
+                            narrative_rhetoric_summary = sorted(zip(narrative_rhetoric_results['labels'], narrative_rhetoric_results['scores']), key=lambda x: x[1], reverse=True)[:3]
+                            narrative_rhetoric_text = ', '.join([label.split('|')[0].strip() for label, score in narrative_rhetoric_summary])
+
+                            # Get top 3 target audience labels
+                            target_audience_summary = sorted(zip(target_audience_results['labels'], target_audience_results['scores']), key=lambda x: x[1], reverse=True)[:3]
+                            target_audience_text = ', '.join([label.split('|')[0].strip() for label, score in target_audience_summary])
+
+                            # Get top appeal type label
+                            appeal_type_summary = sorted(zip(appeal_type_results['labels'], appeal_type_results['scores']), key=lambda x: x[1], reverse=True)[:1]
+                            appeal_type_text = appeal_type_summary[0][0].split('|')[0].strip() if appeal_type_summary else "N/A"
+
+
+                            st.write(f"This article primarily uses {narrative_rhetoric_text} and appeals to a target audience generally of {target_audience_text} using {appeal_type_text}.")
 
                 else:
                     st.warning("Please fetch an article before classifying.")
