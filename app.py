@@ -10,8 +10,10 @@ Original file is located at
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install streamlit torch newspaper3k beautifulsoup4 lxml[html_clean] requests lxml_html_clean unidecode
 
-import streamlit as st
 import os
+os.environ["HF_TOKEN"] = "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"
+import streamlit as st
+
 from newspaper import Article
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -46,11 +48,10 @@ def fetch_article_text(url):
 # Function to classify text using zero-shot classification via Hugging Face Inference API
 def classify_text_zero_shot(text, candidate_labels):
     """Classifies text using zero-shot classification via Hugging Face Inference API."""
-    hf_api_token = st.secrets.get("HF_TOKEN") # Use st.secrets.get for safer access
-    os.environ["HF_TOKEN"] = hf_api_token # Set the token in environment variables
+    hf_api_token = os.environ.get("HF_TOKEN") # Use os.environ.get to access the environment variable
 
     if not hf_api_token:
-        return {"error": "Hugging Face API token not found. Please set the HF_TOKEN secret."}
+        return {"error": "Hugging Face API token not found. Please set the HF_TOKEN environment variable."}
 
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
 
