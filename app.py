@@ -220,3 +220,161 @@ selected_page_name = st.sidebar.selectbox("Choose a page", pages.keys())
 
 # Display the selected page
 pages[selected_page_name]()
+
+def plot_classification_scores(results, title):
+    if "error" in results:
+        st.error(f"Could not plot scores for {title}: {results['error']}")
+        return
+    elif not results or 'scores' not in results or not results['scores']:
+        st.warning(f"No classification results to plot for {title}.")
+        return
+
+    # Combine labels and scores and sort by score in descending order
+    sorted_results = sorted(zip(results['labels'], results['scores']), key=lambda x: x[1], reverse=True)
+
+    # Truncate labels before '|' for plotting
+    truncated_labels = [label.split('|')[0].strip() for label, score in sorted_results]
+    scores = [score for label, score in sorted_results]
+
+    df = pd.DataFrame({
+        'Labels': truncated_labels,
+        'Scores': scores
+    })
+
+    st.subheader(f"Classification Scores: {title}")
+    fig, ax = plt.subplots()
+    ax.bar(df['Labels'], df['Scores'])
+    ax.set_ylabel("Score")
+    ax.set_xticklabels(df['Labels'], rotation=45, ha='right') # Rotate labels for better readability
+    st.pyplot(fig)
+
+def article_rhetoric_detector():
+    st.header("view article text and classify rhetoric")
+    st.write("Don’t just read the news- read between the lines")
+    st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
+
+    url = st.text_input("Enter the URL of a news article:")
+
+    if url:
+        with st.spinner("Fetching article text..."):
+            article_data = fetch_article_text(url)
+
+        if "error" in article_data:
+            st.error(article_data["error"])
+        else:
+            st.subheader("Article Text:")
+            article_text = article_data["text"]
+            st.text_area("Article Content", article_text, height=500)
+
+            # Transliterate the article text
+            transliterated_text = unidecode(article_text)
+
+            st.subheader("Zero-Shot Classification")
+
+            # Define the candidate labels
+            narrative_rhetoric_labels = ["Neutral or Everyday Event |: Article describes ordinary events such as business openings, cultural celebrations, or routine community updates without political, ideological, or conflict-driven framing, The city's annual music festival drew thousands of attendees, celebrating local talent and community spirit, A local bakery opened its doors this week, offering fresh bread and pastries to the neighborhood",    "Unclear or Minimal Rhetoric | : Article lacks enough information to determine a strong persuasive or ideological framing. Statements are mostly factual or ambiguous without clear narrative intent, Authorities have not confirmed the source of the unusual sounds reported near the harbor,Officials have released few details about the recent outage, leaving the cause uncertain" ,    "Us vs Them |: Frames one group as morally superior and the other as dangerous, inferior or untrustworthy, Foreign powers are undermining our sovereignty, threatening our very way of life, Our nation faces an existential threat from foreign corporations trying to dictate our economy,",    "Exceptionalism | : Claims a nation or group is unique, morally superior, or destined for a special role in the world. Our nation is destined to lead the world into a new era of progress and enlightenment, Only our people have the vision and moral courage to guide the world out of crisis",    "Security Threat Inflation |: Exaggerates or amplifies the scale of a threat to justify urgent or extreme action, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come, President cited 'national security' concerns as a reason for the import tax hike, The actions of the a countrys Federation continue to pose a threat to another countrys security ",    "Humanitarian Pretext |: Presents intervention or policy as purely altruistic and compassionate, masking strategic goals. Our intervention is purely for humanitarian purposes - to save lives and protected the innocent. Military presence in the region is necessary to protect innocent civilians from human rights abuses, A countrys continued military actions in another country constituted a national emergency",    "Moral Panic or Outrage |: Focuses on moral or ethical violations to spark strong emotional reactions in the public.Parents are outraged after a controversial new book was introduced into the school curriculum. Community leaders are demanding an immediate ban on the controversial artwork that has shocked the public. Leader slaps 50 percent tariff on one countrys goods over imports of other countrys oil",    "Victimhood or Persecution | Narrative: Portrays own group as unfairly targeted, oppressed, or under attack.We have been oppressed and silenced for decades, yet we continue to fight for justice. Our culture has been systematically targeted and erased from public life.One country punished while other importers not targeted",    "Destiny & Progress |: Frames events as part of inevitable historical progress or being on the right side of history, This breakthrough is part of humanity's unstoppable march toward a brighter tomorrow, This infrastructure project marks the beginning of a new era of prosperity for our nation",    "Unity Against a Common Enemy |: Calls for cohesion and solidarity by identifying and opposing a shared adversary.We must stand together to protect our community from those who wish to destroy it, If we do not unite now, our adversaries will succeed in dismantling everything we have built together"] # Add your labels here
+            appeal_type_labels = ["Pathos | Emotional appeal: targets fear, pride, anger, compassion, hope, justice, jealousy, love, patriotism, pity, sympathy, vivid language,  eg: our way of life is under threat, Foreign powers are undermining our sovereignty, threatening our very way of life, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come,Our intervention is purely for humanitarian purposes - to save lives and protected the innocent. Military presence in the region is necessary to protect innocent civilians from further harm, Parents are outraged after a controversial new book was introduced into the school curriculum, We have been oppressed and silenced for decades, yet we continue to fight for justice. Our nation faces an existential threat from foreign corporations trying to dictate our economy. If we do not unite now, our adversaries will succeed in dismantling everything we have built together" ,
+    "Logos | Logical/ pragmatic appeal: uses statistics, facts, rational arguments, reason, evidence, logic, anecdotes, case studies, analogies, comparisons, cause and effect, proof, eg: data shows crime has doubled, A local bakery opened its doors this week, Officials have released few details about the recent outage, leaving the cause uncertain." ,
+    "Ethos | Credibility appeal: leans on authority, moral standing, expertise, impartiality, confidence in delivery, honesty, fairness, reliability, trustworthy, educated, cites credible sources, reputation, President cited 'national security' concerns as a reason for the import tax hike, "] # Add your labels here
+            target_audience_labels = ["Nationalists or Patriots |: Citizens who value national pride, sovereignty, and cultural identity: Exceptionalism, Us vs Them, Unity Against a Common Enemy",
+    "Security‑Conscious Citizens |: People prioritizing public safety, stability, and protection from threats: Security Threat Inflation, Us vs Them",
+    "Humanitarians or Compassionate Public |: Individuals motivated by empathy, fairness, and human rights concerns: Humanitarian Pretext, Victimhood Narratives",
+    "Progress‑Oriented Groups |: People inspired by innovation, reform, and long‑term vision: Destiny & Progress, Innovation Narratives",
+    "Culturally Conservative Groups |: Communities seeking to preserve traditional values, customs, or religion: Cultural Preservation, Identity Appeals",
+    "Economically Concerned Citizens |: Those focused on job security, trade, and financial wellbeing: Economic Threat, Prosperity Narratives",
+    "Political Activists or Partisans |: Citizens aligned strongly with a political ideology or movement: Moral Panic / Outrage, Us vs Them",
+    "Internationally Minded Citizens |: People engaged with global cooperation, diplomacy, or multiculturalism: Humanitarian, Progress, Cooperative Narratives"] # Add your labels here
+
+            if st.button("Classify Rhetoric"):
+                if transliterated_text: # Use transliterated_text here
+                    with st.spinner("Classifying text..."):
+                        narrative_rhetoric_results = None
+                        appeal_type_results = None
+                        target_audience_results = None
+
+                        # Classify for narrative rhetoric
+                        if narrative_rhetoric_labels:
+                            narrative_rhetoric_results = classify_text_zero_shot(transliterated_text, narrative_rhetoric_labels) # Use transliterated_text
+                            if "error" in narrative_rhetoric_results:
+                                st.error(f"Error classifying narrative rhetoric: {narrative_rhetoric_results['error']}")
+
+
+                        # Classify for appeal type
+                        if appeal_type_labels:
+                            appeal_type_results = classify_text_zero_shot(transliterated_text, appeal_type_labels) # Use transliterated_text
+                            if "error" in appeal_type_results:
+                                st.error(f"Error classifying appeal type: {appeal_type_results['error']}")
+
+
+                        # Classify for target audience
+                        if target_audience_labels:
+                            target_audience_results = classify_text_zero_shot(transliterated_text, target_audience_labels) # Use transliterated_text
+                            if "error" in target_audience_results:
+                                st.error(f"Error classifying target audience: {target_audience_results['error']}")
+
+
+                        # Format and display the summary if all classifications were successful
+                        if narrative_rhetoric_results and "error" not in narrative_rhetoric_results and \
+                           appeal_type_results and "error" not in appeal_type_results and \
+                           target_audience_results and "error" not in target_audience_results:
+
+                            st.subheader("Classification Summary:")
+
+                            # Get top 3 narrative rhetoric labels and truncate at '|'
+                            narrative_rhetoric_summary = sorted(zip(narrative_rhetoric_results['labels'], narrative_rhetoric_results['scores']), key=lambda x: x[1], reverse=True)[:3]
+                            narrative_rhetoric_text = ', '.join([label.split('|')[0].strip() for label, score in narrative_rhetoric_summary])
+
+                            # Get top 3 target audience labels and truncate at '|'
+                            target_audience_summary = sorted(zip(target_audience_results['labels'], target_audience_results['scores']), key=lambda x: x[1], reverse=True)[:3]
+                            target_audience_text = ', '.join([label.split('|')[0].strip() for label, score in target_audience_summary])
+
+                            # Get top appeal type label and truncate at '|'
+                            appeal_type_summary = sorted(zip(appeal_type_results['labels'], appeal_type_results['scores']), key=lambda x: x[1], reverse=True)[:1]
+                            appeal_type_text = appeal_type_summary[0][0].split('|')[0].strip() if appeal_type_summary else "N/A"
+
+
+                            st.write(f"This article primarily uses {narrative_rhetoric_text} and appeals to a target audience generally of {target_audience_text} using {appeal_type_text}.")
+
+                            # Add buttons to display plots
+                            if st.button("Show Narrative Rhetoric Scores"):
+                                plot_classification_scores(narrative_rhetoric_results, "Narrative Rhetoric")
+
+                            if st.button("Show Appeal Type Scores"):
+                                plot_classification_scores(appeal_type_results, "Appeal Type")
+
+                            if st.button("Show Target Audience Scores"):
+                                plot_classification_scores(target_audience_results, "Target Audience")
+
+
+                else:
+                    st.warning("Please fetch an article before classifying.")
+
+
+def popular_rhetoric_timeline_page():
+    st.header("the story behind the story")
+    st.write("Explore the trends of popular rhetoric over time.")
+    st.warning("This feature is not yet implemented.")
+    # Add the timeline visualization here
+
+def about_page():
+    st.header("The media tells stories. We tell you why.")
+    st.write("NarrAItives is a critical media analysis tool designed to help you uncover the hidden patterns shaping the information you consume—whether in news, advertising, or social media feeds. In a world where narratives are engineered to influence perception, NarrAItives uses advanced AI language models and content-mapping algorithms to identify recurring themes, framing techniques, and potential biases in real time. It’s built to reveal what often influences your thoughts and actions without you even realizing it.")
+    st.write("New in this update: You can currently explore our Article Rhetoric Detection page, tailored for newspaper articles, to see exactly how language is used to frame events and ideas. We plan to expand NarrAItives to assess other influential media, including advertisements, social media pages, films, and more—any medium that shapes public perception.")
+    st.write("Our goal is to empower individuals, researchers, and policymakers with transparent, evidence-based insights, enabling more informed decision-making and a healthier public discourse.")
+    st.write("NarrAItives is powered by the facebook/bart-large-mnli model via Hugging Face, chosen for its strong capabilities in natural language inference and rhetorical analysis.")
+    st.write("Connect with the creator here: https://www.linkedin.com/in/aamnah-pathan-5067b4370") # Added LinkedIn link
+    # Add information about the project here
+
+# Create a dictionary of pages
+pages = {
+    "Home": home_page,
+    "Article Rhetoric Detector": article_rhetoric_detector,
+    "Popular Rhetoric Timeline": popular_rhetoric_timeline_page,
+    "About": about_page,
+}
+
+# Use a selectbox in the sidebar for navigation
+selected_page_name = st.sidebar.selectbox("Choose a page", pages.keys())
+
+# Display the selected page
+pages[selected_page_name]()
