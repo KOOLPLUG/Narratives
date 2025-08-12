@@ -10,36 +10,100 @@ Original file is located at
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install streamlit torch newspaper3k beautifulsoup4 lxml[html_clean] requests lxml_html_clean unidecode
 
-def plot_classification_scores(results, title):
+import os
+import streamlit as st
+
+from newspaper import Article
+import matplotlib.pyplot as plt
+import pandas as pd
+import requests # Import the requests library
+import json # Import the json library
+from unidecode import unidecode # Import unidecode
+
+st.set_page_config(
+    page_title="NarrAItives",
+)
+
+st.title("NarrAItives")
+
+# Function to fetch article text
+def fetch_article_text(url):
+    """Fetches article and returns the text."""
+    try:
+        article = Article(url)
+        article.download()
+        # Attempt to parse with UTF-8 first, fallback to ignoring errors
+        try:
+            article.parse()
+            text = article.text.strip()
+        except UnicodeDecodeError:
+             article.html = article.html.decode('utf-8', errors='ignore')
+             article.parse()
+             text = article.text.strip()
+        return {"text": text}
+    except Exception as e:
+        return {"error": f"Error fetching article: {e}"}
+
+# Function to classify text using zero-shot classification via Hugging Face Inference API
+def classify_text_zero_shot(text, candidate_labels):
+    """Classifies text using zero-shot classification via Hugging Face Inference API."""
+    hf_api_token = os.environ.get("HF_TOKEN") # Use os.environ.get to access the environment variable
+
+    if not hf_api_token:
+        return {"error": "Hugging Face API token not found. Please set the HF_TOKEN environment variable."}
+
+    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+
+    # Ensure headers are also encoded as UTF-8
+    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json; charset=utf-8"}
+
+    # Explicitly encode the text to UTF-8
+    encoded_text = text.encode('utf-8').decode('utf-8')
+
+    payload = {
+        "inputs": encoded_text,
+        "parameters": {"candidate_labels": candidate_labels},
+    }
+
+    try:
+        # Encode the payload to JSON with UTF-8
+        encoded_payload = json.dumps(payload).encode('utf-8')
+        response = requests.post(API_URL, headers=headers, data=encoded_payload) # Use data instead of json
+        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Error during API classification: {e}"}
+    except Exception as e:
+        return {"error": f"An unexpected error occurred during classification: {e}"}
+
+# Function to format classification results
+def format_classification_results(results, title, top_n=None):
     if "error" in results:
-        st.error(f"Could not plot scores for {title}: {results['error']}")
-        return
+        return f"Error classifying {title}: {results['error']}"
     elif not results or 'scores' not in results or not results['scores']:
-        st.warning(f"No classification results to plot for {title}.")
-        return
+        return f"No classification results available for {title}."
+    else:
+        # Combine labels and scores and sort by score in descending order
+        sorted_results = sorted(zip(results['labels'], results['scores']), key=lambda x: x[1], reverse=True)
 
-    # Combine labels and scores and sort by score in descending order
-    sorted_results = sorted(zip(results['labels'], results['scores']), key=lambda x: x[1], reverse=True)
+        if top_n is not None:
+            sorted_results = sorted_results[:top_n]
 
-    # Truncate labels before '|' for plotting
-    truncated_labels = [label.split('|')[0].strip() for label, score in sorted_results]
-    scores = [score for label, score in sorted_results]
+        formatted_output = f"**{title}:**\n"
+        for label, score in sorted_results:
+            # Truncate label name at '|'
+            truncated_label = label.split('|')[0].strip()
+            formatted_output += f"- {truncated_label}: {score:.4f}\n"
+        return formatted_output
 
-    df = pd.DataFrame({
-        'Labels': truncated_labels,
-        'Scores': scores
-    })
-
-    st.subheader(f"Classification Scores: {title}")
-    fig, ax = plt.subplots()
-    ax.bar(df['Labels'], df['Scores'])
-    ax.set_ylabel("Score")
-    ax.set_xticklabels(df['Labels'], rotation=45, ha='right') # Rotate labels for better readability
-    st.pyplot(fig)
+def home_page():
+    st.header("Uncover the patterns shaping your world.")
+    st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
+    st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification for common narrative rhetoric.")
+    st.write("Use the navigation on the left to explore different features of the app.")
 
 def article_rhetoric_detector():
-    st.header("view article text and classify rhetoric")
-    st.write("Don’t just read the news- read between the lines")
+    st.header("Dont just read the news- read between the lines.")
     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
 
     url = st.text_input("Enter the URL of a news article:")
@@ -60,7 +124,7 @@ def article_rhetoric_detector():
 
             st.subheader("Zero-Shot Classification")
 
-            # Define the candidate labels
+            # Define the candidate labels and replace '|'
             narrative_rhetoric_labels = ["Neutral or Everyday Event |: Article describes ordinary events such as business openings, cultural celebrations, or routine community updates without political, ideological, or conflict-driven framing, The city's annual music festival drew thousands of attendees, celebrating local talent and community spirit, A local bakery opened its doors this week, offering fresh bread and pastries to the neighborhood",    "Unclear or Minimal Rhetoric | : Article lacks enough information to determine a strong persuasive or ideological framing. Statements are mostly factual or ambiguous without clear narrative intent, Authorities have not confirmed the source of the unusual sounds reported near the harbor,Officials have released few details about the recent outage, leaving the cause uncertain" ,    "Us vs Them |: Frames one group as morally superior and the other as dangerous, inferior or untrustworthy, Foreign powers are undermining our sovereignty, threatening our very way of life, Our nation faces an existential threat from foreign corporations trying to dictate our economy,",    "Exceptionalism | : Claims a nation or group is unique, morally superior, or destined for a special role in the world. Our nation is destined to lead the world into a new era of progress and enlightenment, Only our people have the vision and moral courage to guide the world out of crisis",    "Security Threat Inflation |: Exaggerates or amplifies the scale of a threat to justify urgent or extreme action, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come, President cited 'national security' concerns as a reason for the import tax hike, The actions of the a countrys Federation continue to pose a threat to another countrys security ",    "Humanitarian Pretext |: Presents intervention or policy as purely altruistic and compassionate, masking strategic goals. Our intervention is purely for humanitarian purposes - to save lives and protected the innocent. Military presence in the region is necessary to protect innocent civilians from human rights abuses, A countrys continued military actions in another country constituted a national emergency",    "Moral Panic or Outrage |: Focuses on moral or ethical violations to spark strong emotional reactions in the public.Parents are outraged after a controversial new book was introduced into the school curriculum. Community leaders are demanding an immediate ban on the controversial artwork that has shocked the public. Leader slaps 50 percent tariff on one countrys goods over imports of other countrys oil",    "Victimhood or Persecution | Narrative: Portrays own group as unfairly targeted, oppressed, or under attack.We have been oppressed and silenced for decades, yet we continue to fight for justice. Our culture has been systematically targeted and erased from public life.One country punished while other importers not targeted",    "Destiny & Progress |: Frames events as part of inevitable historical progress or being on the right side of history, This breakthrough is part of humanity's unstoppable march toward a brighter tomorrow, This infrastructure project marks the beginning of a new era of prosperity for our nation",    "Unity Against a Common Enemy |: Calls for cohesion and solidarity by identifying and opposing a shared adversary.We must stand together to protect our community from those who wish to destroy it, If we do not unite now, our adversaries will succeed in dismantling everything we have built together"] # Add your labels here
             appeal_type_labels = ["Pathos | Emotional appeal: targets fear, pride, anger, compassion, hope, justice, jealousy, love, patriotism, pity, sympathy, vivid language,  eg: our way of life is under threat, Foreign powers are undermining our sovereignty, threatening our very way of life, Authorities warn that the recent cyberattacks are only the beginning of more severe threats to come,Our intervention is purely for humanitarian purposes - to save lives and protected the innocent. Military presence in the region is necessary to protect innocent civilians from further harm, Parents are outraged after a controversial new book was introduced into the school curriculum, We have been oppressed and silenced for decades, yet we continue to fight for justice. Our nation faces an existential threat from foreign corporations trying to dictate our economy. If we do not unite now, our adversaries will succeed in dismantling everything we have built together" ,
     "Logos | Logical/ pragmatic appeal: uses statistics, facts, rational arguments, reason, evidence, logic, anecdotes, case studies, analogies, comparisons, cause and effect, proof, eg: data shows crime has doubled, A local bakery opened its doors this week, Officials have released few details about the recent outage, leaving the cause uncertain." ,
@@ -124,23 +188,12 @@ def article_rhetoric_detector():
 
                             st.write(f"This article primarily uses {narrative_rhetoric_text} and appeals to a target audience generally of {target_audience_text} using {appeal_type_text}.")
 
-                            # Add buttons to display plots
-                            if st.button("Show Narrative Rhetoric Scores"):
-                                plot_classification_scores(narrative_rhetoric_results, "Narrative Rhetoric")
-
-                            if st.button("Show Appeal Type Scores"):
-                                plot_classification_scores(appeal_type_results, "Appeal Type")
-
-                            if st.button("Show Target Audience Scores"):
-                                plot_classification_scores(target_audience_results, "Target Audience")
-
-
                 else:
                     st.warning("Please fetch an article before classifying.")
 
 
 def popular_rhetoric_timeline_page():
-    st.header("the story behind the story")
+    st.header("The story behind the story.")
     st.write("Explore the trends of popular rhetoric over time.")
     st.warning("This feature is not yet implemented.")
     # Add the timeline visualization here
@@ -151,7 +204,7 @@ def about_page():
     st.write("New in this update: You can currently explore our Article Rhetoric Detection page, tailored for newspaper articles, to see exactly how language is used to frame events and ideas. We plan to expand NarrAItives to assess other influential media, including advertisements, social media pages, films, and more—any medium that shapes public perception.")
     st.write("Our goal is to empower individuals, researchers, and policymakers with transparent, evidence-based insights, enabling more informed decision-making and a healthier public discourse.")
     st.write("NarrAItives is powered by the facebook/bart-large-mnli model via Hugging Face, chosen for its strong capabilities in natural language inference and rhetorical analysis.")
-    st.write("Connect with the creator here: https://www.linkedin.com/in/aamnah-pathan-5067b4370") # Added LinkedIn link
+    st.write("Connect with the creator here: https://www.linkedin.com/in/aamnah-pathan-5067b4370")
     # Add information about the project here
 
 # Create a dictionary of pages
@@ -167,3 +220,30 @@ selected_page_name = st.sidebar.selectbox("Choose a page", pages.keys())
 
 # Display the selected page
 pages[selected_page_name]()
+
+def plot_classification_scores(results, title):
+    if "error" in results:
+        st.error(f"Could not plot scores for {title}: {results['error']}")
+        return
+    elif not results or 'scores' not in results or not results['scores']:
+        st.warning(f"No classification results to plot for {title}.")
+        return
+
+    # Combine labels and scores and sort by score in descending order
+    sorted_results = sorted(zip(results['labels'], results['scores']), key=lambda x: x[1], reverse=True)
+
+    # Truncate labels before '|' for plotting
+    truncated_labels = [label.split('|')[0].strip() for label, score in sorted_results]
+    scores = [score for label, score in sorted_results]
+
+    df = pd.DataFrame({
+        'Labels': truncated_labels,
+        'Scores': scores
+    })
+
+    st.subheader(f"Classification Scores: {title}")
+    fig, ax = plt.subplots()
+    ax.bar(df['Labels'], df['Scores'])
+    ax.set_ylabel("Score")
+    ax.set_xticklabels(df['Labels'], rotation=45, ha='right') # Rotate labels for better readability
+    st.pyplot(fig)
