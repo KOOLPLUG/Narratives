@@ -11,7 +11,6 @@ Original file is located at
 # %pip install streamlit torch newspaper3k beautifulsoup4 lxml[html_clean] requests lxml_html_clean unidecode
 
 import os
-os.environ["HF_TOKEN"] = "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"
 import streamlit as st
 
 from newspaper import Article
