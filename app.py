@@ -97,13 +97,14 @@ def format_classification_results(results, title, top_n=None):
         return formatted_output
 
 def home_page():
-    st.header("uncover the patterns shaping your world")
+    st.header("Uncover the patterns shaping your world")
     st.write("Welcome to NarrAItives! This application helps you analyze news articles.")
-    st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification.")
+    st.write("Now you can use the 'Article Text Viewer' to fetch article text and perform zero-shot classification for common narrative rhetoric.")
     st.write("Use the navigation on the left to explore different features of the app.")
 
 def article_rhetoric_detector():
-    st.header("view article text and classify rhetoric")
+    st.header("Dont just read the news- read between the lines")
+    st.write("View article text and classify rhetori")
     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
 
     url = st.text_input("Enter the URL of a news article:")
@@ -193,14 +194,18 @@ def article_rhetoric_detector():
 
 
 def popular_rhetoric_timeline_page():
-    st.header("the story behind the story")
+    st.header("The story behind the story")
     st.write("Explore the trends of popular rhetoric over time.")
     st.warning("This feature is not yet implemented.")
     # Add the timeline visualization here
 
 def about_page():
     st.header("The media tells stories. We tell you why.")
-    st.write("Learn more about the NarrAItives project and the team behind it.")
+    st.write("NarrAItives is a critical media analysis tool designed to help you uncover the hidden patterns shaping the information you consume—whether in news, advertising, or social media feeds. In a world where narratives are engineered to influence perception, NarrAItives uses advanced AI language models and content-mapping algorithms to identify recurring themes, framing techniques, and potential biases in real time. It’s built to reveal what often influences your thoughts and actions without you even realizing it.")
+    st.write("New in this update: You can currently explore our Article Rhetoric Detection page, tailored for newspaper articles, to see exactly how language is used to frame events and ideas. We plan to expand NarrAItives to assess other influential media, including advertisements, social media pages, films, and more—any medium that shapes public perception.")
+    st.write("Our goal is to empower individuals, researchers, and policymakers with transparent, evidence-based insights, enabling more informed decision-making and a healthier public discourse.")
+    st.write("NarrAItives is powered by the facebook/bart-large-mnli model via Hugging Face, chosen for its strong capabilities in natural language inference and rhetorical analysis.")
+    st.write("Connect with the creator here: https://www.linkedin.com/in/aamnah-pathan-5067b4370")
     # Add information about the project here
 
 # Create a dictionary of pages
