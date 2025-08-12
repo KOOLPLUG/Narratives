@@ -10,6 +10,9 @@ Original file is located at
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install streamlit torch newspaper3k beautifulsoup4 lxml[html_clean] requests lxml_html_clean
 
+# Commented out IPython magic to ensure Python compatibility.
+# %pip install unidecode
+
 import streamlit as st
 import os
 from newspaper import Article
@@ -17,6 +20,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import requests # Import the requests library
 import json # Import the json library
+from unidecode import unidecode # Import unidecode
 
 st.set_page_config(
     page_title="NarrAItives",
@@ -100,6 +104,14 @@ def article_rhetoric_detector():
             article_text = article_data["text"]
             st.text_area("Article Content", article_text, height=500)
 
+            # Transliterate the article text
+            transliterated_text = unidecode(article_text)
+
+            # Display original and transliterated text for comparison (optional)
+            st.text_area("Original Article Text", article_text, height=200)
+            st.text_area("Transliterated Article Text", transliterated_text, height=200)
+
+
             st.subheader("Zero-Shot Classification")
 
             # Define the candidate labels and replace '|'
@@ -117,11 +129,11 @@ def article_rhetoric_detector():
     "Internationally Minded Citizens |: People engaged with global cooperation, diplomacy, or multiculturalism: Humanitarian, Progress, Cooperative Narratives"]] # Add your labels here
 
             if st.button("Classify Rhetoric"):
-                if article_text:
+                if transliterated_text: # Use transliterated_text here
                     with st.spinner("Classifying text..."):
                         # Classify for narrative rhetoric
                         if narrative_rhetoric_labels:
-                            narrative_rhetoric_results = classify_text_zero_shot(article_text, narrative_rhetoric_labels)
+                            narrative_rhetoric_results = classify_text_zero_shot(transliterated_text, narrative_rhetoric_labels) # Use transliterated_text
                             if "error" in narrative_rhetoric_results:
                                 st.error(f"Error classifying narrative rhetoric: {narrative_rhetoric_results['error']}")
                             else:
@@ -132,7 +144,7 @@ def article_rhetoric_detector():
 
                         # Classify for appeal type
                         if appeal_type_labels:
-                            appeal_type_results = classify_text_zero_shot(article_text, appeal_type_labels)
+                            appeal_type_results = classify_text_zero_shot(transliterated_text, appeal_type_labels) # Use transliterated_text
                             if "error" in appeal_type_results:
                                 st.error(f"Error classifying appeal type: {appeal_type_results['error']}")
                             else:
@@ -143,7 +155,7 @@ def article_rhetoric_detector():
 
                         # Classify for target audience
                         if target_audience_labels:
-                            target_audience_results = classify_text_zero_shot(article_text, target_audience_labels)
+                            target_audience_results = classify_text_zero_shot(transliterated_text, target_audience_labels) # Use transliterated_text
                             if "error" in target_audience_results:
                                 st.error(f"Error classifying target audience: {target_audience_results['error']}")
                             else:
