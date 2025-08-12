@@ -16,6 +16,7 @@ from newspaper import Article
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests # Import the requests library
+import json # Import the json library
 
 st.set_page_config(
     page_title="NarrAItives",
@@ -45,7 +46,7 @@ def classify_text_zero_shot(text, candidate_labels):
         return {"error": "Hugging Face API token not found. Please set the HF_TOKEN secret."}
 
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-    headers = {"Authorization": f"Bearer {hf_api_token}"}
+    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json"} # Add Content-Type header
 
     payload = {
         "inputs": text,
@@ -53,12 +54,9 @@ def classify_text_zero_shot(text, candidate_labels):
     }
 
     try:
-        # Explicitly encode the text to UTF-8
-        encoded_payload = {
-            "inputs": text.encode('utf-8').decode('utf-8'),
-            "parameters": {"candidate_labels": candidate_labels},
-        }
-        response = requests.post(API_URL, headers=headers, json=encoded_payload)
+        # Encode the payload to JSON with UTF-8
+        encoded_payload = json.dumps(payload).encode('utf-8')
+        response = requests.post(API_URL, headers=headers, data=encoded_payload) # Use data instead of json
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.RequestException as e:
