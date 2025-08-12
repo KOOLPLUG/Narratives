@@ -104,7 +104,6 @@ def home_page():
 
 def article_rhetoric_detector():
     st.header("Dont just read the news- read between the lines")
-    st.write("View article text and classify rhetori")
     st.write("Enter the URL of a news article to view its extracted text and classify its rhetoric.")
 
     url = st.text_input("Enter the URL of a news article:")
