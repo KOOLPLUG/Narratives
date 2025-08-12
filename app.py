@@ -48,7 +48,7 @@ def classify_text_zero_shot(text, candidate_labels):
     API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
 
     # Ensure headers are also encoded as UTF-8
-    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json; charset=utf-8"}
+    headers = {"Authorization": f"Bearer {hf_api_token}", "Content-Type": "application/json"} # Set Content-Type to application/json
 
     # Explicitly encode the text to UTF-8
     encoded_text = text.encode('utf-8').decode('utf-8')
@@ -61,7 +61,7 @@ def classify_text_zero_shot(text, candidate_labels):
     try:
         # Encode the payload to JSON with UTF-8
         encoded_payload = json.dumps(payload).encode('utf-8')
-        response = requests.post(API_URL, headers=headers, data=encoded_payload) # Use data instead of json
+        response = requests.post(API_URL, headers=headers, data=encoded_payload) # Use data with encoded payload
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.RequestException as e:
